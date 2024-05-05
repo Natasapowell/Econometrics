@@ -1,0 +1,129 @@
+/*Econometrics 2 - Spring 
+Problem set 1
+
+2024.04.26*/
+
+use lakisha_aer.dta, replace
+
+*a,
+desc
+
+*b, The basic results on racial discrimination are summarized in Table 4. Replicate numbers in panel A of this table.
+
+tab race h, sum(call) mean
+ 
+summarize call if race == "w" & l == 1
+summarize call if race == "w" & h == 1
+summarize call if race == "b" & l == 1
+summarize call if race == "b" & h == 1
+
+* Calculate total callbacks and total observations by race and resume quality
+egen total_calls = total(call), by(race h)
+egen total_obs = count(call), by(race h)
+
+* Calculate callback rates by race and resume quality
+gen callback_rate = total_calls / total_obs * 100
+
+* Display the results
+list race h callback_rate if !missing(race) & !missing(h), noobs clean
+
+* Collapse the dataset to calculate mean and median callback rates by race and resume quality
+collapse (mean) mean_callback_rate = callback_rate, by(race h)
+
+* Display the results using list
+list race h mean_callback_rate 
+
+
+
+*c,Run probit to reproduce column 1 of Table 5.
+use lakisha_aer.dta, replace
+
+gen yearsexpsq=yearsexp^2
+
+*generate variables with years of experience adjusted for the table, and a squared var
+gen yearsexp_10 = yearsexp/10
+gen yearsexp_10_2 = (yearsexp/10)^2
+
+*generating binary variable for gender and city  
+encode sex, gen(sex_binary) label("1 if female")
+encode city, gen(city_binary) label("1 if chicago")
+
+*generating binary variables for the 6 occupation dummies
+gen occup1 = 1 if occupbroad==1
+replace occup1=0 if occup1 != 1
+
+gen occup2 = 1 if occupbroad==2
+replace occup2=0 if occup2 != 1
+
+gen occup3 = 1 if occupbroad==3
+replace occup3=0 if occup3 != 1
+
+gen occup4 = 1 if occupbroad==4
+replace occup4=0 if occup4 != 1
+
+gen occup5 = 1 if occupbroad==5
+replace occup5=0 if occup5 != 1
+
+gen occup6 = 1 if occupbroad==6
+replace occup6=0 if occup6 != 1
+
+*running probit with additional dummy variables
+probit call yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills req expreq compreq comreq orgreq  educreq sex_binary city_binary occup1 occup2 occup3 occup4 occup5 occup6, robust
+
+margins, dydx(yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills)
+
+*saving out the results
+outreg2 using "ps1c.doc", replace
+
+
+*d,
+probit call yearsexp_10 yearsexp_10_2 i.volunteer i.military i.email i.empholes i.workinschool i.honors i.computerskill i.specialskill i.sex_dummy i.city_dummy i.occup1 i.occup2 i.occup3 i.occup4 i.occup5 i.occup6 i.req i.expreq i.compreq i.comreq i.orgreq  i.educreq, robust
+
+margins, dydx(yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills) post
+outreg2 using "ps1d.doc", replace
+
+
+*e) Table 5 does not report the marginal effects of experience properly: experience is treated as unrelated to experience squared. Fix this; account for the fact that a change in experience implies a change in experience squared.
+
+
+*f)
+* Probit model for whites only for part c
+probit call yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills req expreq compreq comreq orgreq  educreq sex_binary city_binary occup1 occup2 occup3 occup4 occup5 occup6 if race == "w", robust
+
+margins, dydx(yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills) post
+outreg2 using "ps1c.doc", append
+
+* Probit model for blacks only for part c
+probit call yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills req expreq compreq comreq orgreq  educreq sex_binary city_binary occup1 occup2 occup3 occup4 occup5 occup6 if race == "b", robust
+
+margins, dydx(yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills) post
+outreg2 using "ps1c.doc", append
+
+
+* Probit model for whites only for part d
+probit call yearsexp_10 yearsexp_10_2 i.volunteer i.military i.email i.empholes i.workinschool i.honors i.computerskill i.specialskill i.sex_dummy i.city_dummy i.occup1 i.occup2 i.occup3 i.occup4 i.occup5 i.occup6 i.req i.expreq i.compreq i.comreq i.orgreq i.educreq if race == "w", robust
+
+margins, dydx(yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills) post
+outreg2 using "ps1d.doc", append
+
+* Probit model for blacks only for part d
+probit call yearsexp_10 yearsexp_10_2 i.volunteer i.military i.email i.empholes i.workinschool i.honors i.computerskill i.specialskill i.sex_dummy i.city_dummy i.occup1 i.occup2 i.occup3 i.occup4 i.occup5 i.occup6 i.req i.expreq i.compreq i.comreq i.orgreq i.educreq if race == "b", robust
+
+margins, dydx(yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills) post
+outreg2 using "ps1d.doc", append
+
+
+*g)
+*Total Population
+reg call c.yearsexp_10 c.yearsexp_10_2 i.volunteer i.military i.email i.empholes i.workinschool i.honors i.computerskills i.specialskills i.req i.expreq i.compreq i.comreq i.orgreq  i.educreq i.sex_binary i.city_binary i.occup1 i.occup2 i.occup3 i.occup4 i.occup5 i.occup6, robust
+eststo All
+
+*Blacks
+reg call c.yearsexp_10 c.yearsexp_10_2 i.volunteer i.military i.email i.empholes i.workinschool i.honors i.computerskills i.specialskills i.req i.expreq i.compreq i.comreq i.orgreq  i.educreq i.sex_binary i.city_binary i.occup1 i.occup2 i.occup3 i.occup4 i.occup5 i.occup6 if race == "w", robust
+eststo White
+
+*Whites
+reg call c.yearsexp_10 c.yearsexp_10_2 i.volunteer i.military i.email i.empholes i.workinschool i.honors i.computerskills i.specialskills i.req i.expreq i.compreq i.comreq i.orgreq  i.educreq i.sex_binary i.city_binary i.occup1 i.occup2 i.occup3 i.occup4 i.occup5 i.occup6 if race == "b", robust
+eststo Black
+
+estimates table All White Black, keep(c.yearsexp_10 c.yearsexp_10_2 i.volunteer i.military i.email i.empholes i.workinschool i.honors i.computerskills i.specialskills)
