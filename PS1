@@ -114,14 +114,14 @@ outreg2 using "ps1_d.doc", replace
 probit call yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills req expreq compreq comreq orgreq  educreq sex_binary city_binary occup1 occup2 occup3 occup4 occup5 occup6 if race == "w", robust
 
 margins, dydx(yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills) post
-
+testparm c.yearsexp_10 c.yearsexp_10_2 i.volunteer i.military i.email i.empholes i.workinschool i.honors i.computerskills i.specialskills
 outreg2 using "ps1_c.doc", append
 
 * Probit model for blacks only for part c
 probit call yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills req expreq compreq comreq orgreq  educreq sex_binary city_binary occup1 occup2 occup3 occup4 occup5 occup6 if race == "b", robust
 
 margins, dydx(yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills) post
-
+testparm c.yearsexp_10 c.yearsexp_10_2 i.volunteer i.military i.email i.empholes i.workinschool i.honors i.computerskills i.specialskills
 outreg2 using "ps1_c.doc", append
 
 
@@ -129,14 +129,14 @@ outreg2 using "ps1_c.doc", append
 probit call yearsexp_10 yearsexp_10_2 i.volunteer i.military i.email i.empholes i.workinschool i.honors i.computerskill i.specialskill i.sex_binary i.city_binary i.occup1 i.occup2 i.occup3 i.occup4 i.occup5 i.occup6 i.req i.expreq i.compreq i.comreq i.orgreq i.educreq if race == "w", robust
 
 margins, dydx(yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills) post
-
+testparm c.yearsexp_10 c.yearsexp_10_2 i.volunteer i.military i.email i.empholes i.workinschool i.honors i.computerskills i.specialskills
 outreg2 using "ps1_d.doc", append
 
 * Probit model for blacks only for part d
 probit call yearsexp_10 yearsexp_10_2 i.volunteer i.military i.email i.empholes i.workinschool i.honors i.computerskill i.specialskill i.sex_binary i.city_binary i.occup1 i.occup2 i.occup3 i.occup4 i.occup5 i.occup6 i.req i.expreq i.compreq i.comreq i.orgreq i.educreq if race == "b", robust
 
 margins, dydx(yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills) post
-
+testparm c.yearsexp_10 c.yearsexp_10_2 i.volunteer i.military i.email i.empholes i.workinschool i.honors i.computerskills i.specialskills
 outreg2 using "ps1_d.doc", append
 
 
