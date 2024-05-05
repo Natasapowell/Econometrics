@@ -12,10 +12,24 @@ desc
 
 tab race h, sum(call) mean
  
+ 
+/*      Means of 1=applicant was called back
+
+           |   1=high quality
+           |       resume
+      race |         0          1 |     Total
+-----------+----------------------+----------
+         b | .06188119  .06704824 | .06447639
+         w |  .0849835  .10793132 | .09650924
+-----------+----------------------+----------
+     Total | .07343234  .08748978 | .08049281  */
+
+*Alternatively
 summarize call if race == "w" & l == 1
 summarize call if race == "w" & h == 1
 summarize call if race == "b" & l == 1
 summarize call if race == "b" & h == 1
+
 
 * Calculate total callbacks and total observations by race and resume quality
 egen total_calls = total(call), by(race h)
@@ -32,6 +46,15 @@ collapse (mean) mean_callback_rate = callback_rate, by(race h)
 
 * Display the results using list
 list race h mean_callback_rate 
+/*
+     +---------------------+
+     | race   h   mean_c~e |
+     |---------------------|
+  1. |    b   0   6.188119 |
+  2. |    b   1   6.704824 |
+  3. |    w   0    8.49835 |
+  4. |    w   1   10.79313 |
+     +---------------------+  */
 
 
 
@@ -70,17 +93,17 @@ replace occup6=0 if occup6 != 1
 *running probit with additional dummy variables
 probit call yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills req expreq compreq comreq orgreq  educreq sex_binary city_binary occup1 occup2 occup3 occup4 occup5 occup6, robust
 
-margins, dydx(yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills)
+margins, dydx(yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills) post
 
 *saving out the results
-outreg2 using "ps1c.doc", replace
-
+outreg2 using "ps1_c.doc", replace 
 
 *d,
-probit call yearsexp_10 yearsexp_10_2 i.volunteer i.military i.email i.empholes i.workinschool i.honors i.computerskill i.specialskill i.sex_dummy i.city_dummy i.occup1 i.occup2 i.occup3 i.occup4 i.occup5 i.occup6 i.req i.expreq i.compreq i.comreq i.orgreq  i.educreq, robust
+probit call yearsexp_10 yearsexp_10_2 i.volunteer i.military i.email i.empholes i.workinschool i.honors i.computerskill i.specialskill i.sex_binary i.city_binary i.occup1 i.occup2 i.occup3 i.occup4 i.occup5 i.occup6 i.req i.expreq i.compreq i.comreq i.orgreq  i.educreq, robust
 
 margins, dydx(yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills) post
-outreg2 using "ps1d.doc", replace
+
+outreg2 using "ps1_d.doc", replace
 
 
 *e) Table 5 does not report the marginal effects of experience properly: experience is treated as unrelated to experience squared. Fix this; account for the fact that a change in experience implies a change in experience squared.
@@ -91,26 +114,30 @@ outreg2 using "ps1d.doc", replace
 probit call yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills req expreq compreq comreq orgreq  educreq sex_binary city_binary occup1 occup2 occup3 occup4 occup5 occup6 if race == "w", robust
 
 margins, dydx(yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills) post
-outreg2 using "ps1c.doc", append
+
+outreg2 using "ps1_c.doc", append
 
 * Probit model for blacks only for part c
 probit call yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills req expreq compreq comreq orgreq  educreq sex_binary city_binary occup1 occup2 occup3 occup4 occup5 occup6 if race == "b", robust
 
 margins, dydx(yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills) post
-outreg2 using "ps1c.doc", append
+
+outreg2 using "ps1_c.doc", append
 
 
 * Probit model for whites only for part d
-probit call yearsexp_10 yearsexp_10_2 i.volunteer i.military i.email i.empholes i.workinschool i.honors i.computerskill i.specialskill i.sex_dummy i.city_dummy i.occup1 i.occup2 i.occup3 i.occup4 i.occup5 i.occup6 i.req i.expreq i.compreq i.comreq i.orgreq i.educreq if race == "w", robust
+probit call yearsexp_10 yearsexp_10_2 i.volunteer i.military i.email i.empholes i.workinschool i.honors i.computerskill i.specialskill i.sex_binary i.city_binary i.occup1 i.occup2 i.occup3 i.occup4 i.occup5 i.occup6 i.req i.expreq i.compreq i.comreq i.orgreq i.educreq if race == "w", robust
 
 margins, dydx(yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills) post
-outreg2 using "ps1d.doc", append
+
+outreg2 using "ps1_d.doc", append
 
 * Probit model for blacks only for part d
-probit call yearsexp_10 yearsexp_10_2 i.volunteer i.military i.email i.empholes i.workinschool i.honors i.computerskill i.specialskill i.sex_dummy i.city_dummy i.occup1 i.occup2 i.occup3 i.occup4 i.occup5 i.occup6 i.req i.expreq i.compreq i.comreq i.orgreq i.educreq if race == "b", robust
+probit call yearsexp_10 yearsexp_10_2 i.volunteer i.military i.email i.empholes i.workinschool i.honors i.computerskill i.specialskill i.sex_binary i.city_binary i.occup1 i.occup2 i.occup3 i.occup4 i.occup5 i.occup6 i.req i.expreq i.compreq i.comreq i.orgreq i.educreq if race == "b", robust
 
 margins, dydx(yearsexp_10 yearsexp_10_2 volunteer military email empholes workinschool honors computerskills specialskills) post
-outreg2 using "ps1d.doc", append
+
+outreg2 using "ps1_d.doc", append
 
 
 *g)
@@ -127,3 +154,36 @@ reg call c.yearsexp_10 c.yearsexp_10_2 i.volunteer i.military i.email i.empholes
 eststo Black
 
 estimates table All White Black, keep(c.yearsexp_10 c.yearsexp_10_2 i.volunteer i.military i.email i.empholes i.workinschool i.honors i.computerskills i.specialskills)
+
+
+/*
+-----------------------------------------------------
+    Variable |    All         White        Black     
+-------------+---------------------------------------
+ yearsexp_10 |  .07791558    .15421447    .01877619  
+yearsexp_1~2 | -.02050473   -.04948626    .00138166  
+             |
+   volunteer |
+             | -.00885761   -.02413663    .00732224  
+             |
+    military |
+             |  .00346997    .03200042   -.01726108  
+             |
+       email |
+             |  .01500506    .02643699    .00090848  
+             |
+    empholes |
+             |  .02535519    .03251874    .01817056  
+             |
+workinschool |
+             |  .01463422    .02428246    .00311388  
+             |
+      honors |
+             |  .05590318    .06494315    .04305305  
+             |
+computersk~s |
+             | -.02045463   -.04019841   -.00050253  
+             |
+specialski~s |
+             |  .05784126    .07247992    .04392256  
+-----------------------------------------------------*/
