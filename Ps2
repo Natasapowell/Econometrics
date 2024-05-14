@@ -1,0 +1,211 @@
+*(a) Skim Lalonde's paper to understand the context. Obtain the data
+use nsw.dta, replace
+
+ mean re75 re78, over(treat)
+
+/*Mean estimation                            Number of obs = 722
+
+--------------------------------------------------------------
+             |       Mean   Std. err.     [95% conf. interval]
+-------------+------------------------------------------------
+c.re75@treat |
+          0  |   3026.683   252.2977      2531.357    3522.009
+          1  |   3066.098   282.8697      2510.751    3621.445
+             |
+c.re78@treat |
+          0  |   5090.048    277.368      4545.503    5634.594
+          1  |   5976.352   401.7594      5187.594     6765.11
+--------------------------------------------------------------*/
+	
+*(b) Make use of the experimental data (NSW) to obtain the benchmark estimate for the effect of training on earnings in 1978. Use the treatment and the control groups from the experiment.
+
+reg re78 treat
+
+
+/*    Source |       SS           df       MS      Number of obs   =       722
+-------------+----------------------------------   F(1, 720)       =      3.52
+       Model |   137332501         1   137332501   Prob > F        =    0.0609
+    Residual |  2.8053e+10       720  38962866.3   R-squared       =    0.0049
+-------------+----------------------------------   Adj R-squared   =    0.0035
+       Total |  2.8191e+10       721  39099301.3   Root MSE        =      6242
+
+------------------------------------------------------------------------------
+        re78 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   886.3037   472.0863     1.88   0.061    -40.52635    1813.134
+       _cons |   5090.048   302.7826    16.81   0.000     4495.606    5684.491
+------------------------------------------------------------------------------*/
+
+regress re78 treat age education black hispanic married nodegree
+
+/*
+      Source |       SS           df       MS      Number of obs   =       722
+-------------+----------------------------------   F(7, 714)       =      2.58
+       Model |   696533107         7  99504729.6   Prob > F        =    0.0123
+    Residual |  2.7494e+10       714  38507091.2   R-squared       =    0.0247
+-------------+----------------------------------   Adj R-squared   =    0.0151
+       Total |  2.8191e+10       721  39099301.3   Root MSE        =    6205.4
+
+------------------------------------------------------------------------------
+        re78 | Coefficient  Std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+       treat |   793.6092   471.8952     1.68   0.093    -132.8588    1720.077
+         age |   20.10478    36.4909     0.55   0.582    -51.53753    91.74708
+   education |   205.8794   180.9277     1.14   0.256    -149.3346    561.0933
+       black |  -1765.638   803.4878    -2.20   0.028     -3343.12   -188.1571
+    hispanic |  -133.9468   1053.144    -0.13   0.899    -2201.575    1933.682
+     married |   540.9907   644.9783     0.84   0.402    -725.2901    1807.272
+    nodegree |  -522.3149   749.1767    -0.70   0.486    -1993.168    948.5378
+       _cons |   4268.577   2624.619     1.63   0.104    -884.3171    9421.472
+------------------------------------------------------------------------------*/
+
+* Do the results change if you control for various demographics variables? Do you expect any changes?   	
+*ANSWER: 
+*Results exhibited slight difference once we control for various demographic variables. Initially, without trying additional controls out, we would expect adding confounders to reduce standard errors, alter the values of coefficients and making estimates more precise.
+
+
+
+
+
+*c, 
+*Pooling treated individuals from the NSW data and their counterparts from CPS. 
+keep if treat==1
+append using "cps_controls.dta"
+
+*generating additional variables to help control regression
+gen agesq = age^2
+gen educationsq = education^2
+
+*estimating the treatment effect using OLS 
+reg re78 treat
+
+*estimating the treatment effect using OLS and controlling for the observable demographics
+reg re78 treat age agesq education educationsq black hispanic married nodegree
+
+clear
+
+*more focused sample: CPS2
+use nsw.dta, replace
+
+keep if treat==1
+append using "cps_controls2.dta"
+
+*generating additional variables to help control regression
+gen agesq = age^2
+gen educationsq = education^2
+
+*estimating the treatment effect using OLS 
+reg re78 treat
+
+*estimating the treatment effect using OLS and controlling for the observable demographics
+reg re78 treat age agesq education educationsq black hispanic married nodegree
+
+*more focused sample: CPS3
+use nsw.dta, replace
+
+keep if treat==1
+append using "cps_controls3.dta"
+
+*generating additional variables to help control regression
+gen agesq = age^2
+gen educationsq = education^2
+
+*estimating the treatment effect using OLS 
+reg re78 treat
+
+*estimating the treatment effect using OLS and controlling for the observable demographics
+reg re78 treat age agesq education educationsq black hispanic married nodegree
+
+
+*PSID
+*more focused sample: PSID
+use nsw.dta, replace
+
+keep if treat==1
+append using "psid_controls.dta"
+
+*generating additional variables to help control regression
+gen agesq = age^2
+gen educationsq = education^2
+
+*estimating the treatment effect using OLS 
+reg re78 treat
+
+*estimating the treatment effect using OLS and controlling for the observable demographics
+reg re78 treat age agesq education educationsq black hispanic married nodegree
+
+*more focused sample: PSID2
+use nsw.dta, replace
+
+keep if treat==1
+append using "psid_controls2.dta"
+
+*generating additional variables to help control regression
+gen agesq = age^2
+gen educationsq = education^2
+
+*estimating the treatment effect using OLS 
+reg re78 treat
+
+*estimating the treatment effect using OLS and controlling for the observable demographics
+reg re78 treat age agesq education educationsq black hispanic married nodegree
+
+*more focused sample: PSID3
+use nsw.dta, replace
+
+keep if treat==1
+append using "psid_controls3.dta"
+
+*generating additional variables to help control regression
+gen agesq = age^2
+gen educationsq = education^2
+
+*estimating the treatment effect using OLS 
+reg re78 treat
+
+*estimating the treatment effect using OLS and controlling for the observable demographics
+reg re78 treat age agesq education educationsq black hispanic married nodegree
+
+
+
+
+*e, 
+use nsw.dta, replace
+keep if treat == 1
+append using "cps_controls.dta"
+
+teffects psmatch (re78) (treat age education black hispanic married nodegree)
+tebalance summarize
+tebalance summarize, baseline
+tebalance density
+tebalance box
+
+
+/*
+use cps_controls
+use cps_controls2
+use cps_controls3
+
+use psid_controls
+use psid_controls2
+use psid_controls3
+*/
+
+
+
+
+
+
+/*A Simple Algorithm for Estimating the Propensity Score
+• Start with a parsimonious logit specification to estimate the score.
+• Sort data according to estimated propensity score (ranking from lowest to highest).
+• Stratify all observations such that estimated propensity scores within a stratum for
+treated and comparison units are close (no significant difference); e.g., start by dividing
+observations into strata of equal score range (0-0.2,...,0.8-1).
+• Statistical test: for all covariates, differences in means across treated and comparison
+units within each stratum are not significantly different from zero.
+1. If covariates are balanced between treated and comparison observations for all strata, stop.
+2. If covariates are not balanced for some stratum, divide the stratum into finer strata
+and re-evaluate.
+3. If a covariate is not balanced for many strata, modify the logit by adding interaction
+terms and/or higher-order terms of the covariate and re-evaluate.*/
