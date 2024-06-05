@@ -1,0 +1,148 @@
+
+
+// Load your dataset
+use "MURDER.dta", clear
+
+*ii)
+*If executions have a deterrent effect on murder rates, we would expect β1 to be negative. Higher numbers of total executions might disincentivize crime, therefore we would expect the relationship between murder rate and execution rate to be negative, meaning that higher execution rates would correlate with lower murder rates. The sign of β2 could be positive or negative. Higher unemployment might lead to higher crime rates, but this might not have a significant direct effect on murder rates, lower unemployment rates could mean that the economy is doing better, but this could have all sorts of effects.
+
+*ii)
+
+// Keep only observations where year equals 1990 and 1993
+
+drop if year == 87
+
+*Generating year dummy
+gen year93 = (year == 93)
+*OLS regression
+reg mrdrte exec unem year93, robust
+
+*using standard errors clustered at the state level instead of heteroskedasticity-robust standard errors
+reg mrdrte exec unem year93, cluster(id)
+
+*Based on the positive coefficient on the exec variable we do not see any evidence for deterrent effect. Although this coefficient is not statistically significant. However, the effect of exec on mrdrte might be lagged, so the contemporaneous specification in the regression is might not be reflective of the real effect of exec on mrdre.
+
+/* reg mrdrte exec unem year93, cluster(id)
+
+Linear regression                               Number of obs     =        102
+                                                F(3, 50)          =      12.12
+                                                Prob > F          =     0.0000
+                                                R-squared         =     0.1016
+                                                Root MSE          =     10.223
+
+                                    (Std. err. adjusted for 51 clusters in id)
+------------------------------------------------------------------------------
+             |               Robust
+      mrdrte | Coefficient  std. err.      t    P>|t|     [95% conf. interval]
+-------------+----------------------------------------------------------------
+        exec |   .1277287   .1678003     0.76   0.450    -.2093081    .4647655
+        unem |   2.528892   1.504706     1.68   0.099    -.4933994    5.551183
+      year93 |  -2.067417   1.306562    -1.58   0.120    -4.691724    .5568897
+       _cons |  -5.278005   6.676035    -0.79   0.433    -18.68722    8.131207
+------------------------------------------------------------------------------*/
+
+
+*iii)
+
+*Run the fixed effects regression
+xtreg mrdrte exec unem, fe
+
+*There seems to be a deterrence effect since the sign on the exec coefficient is negative, and statistically significant. However, the effect does not seem to be economically large.
+
+*For first differencing:
+* Panel data structure
+xtset id year
+
+*Generating differenced variables
+gen d_mrdrte = mrdrte[_n] - mrdrte[_n-1] if id == id[_n-1]
+gen d_exec = exec[_n] - exec[_n-1] if id == id[_n-1]
+gen d_unem = unem[_n] - unem[_n-1] if id == id[_n-1]
+
+* Drop missing values due to differencing
+drop if missing(d_mrdrte)
+
+* First differencing regression
+reg d_mrdrte d_exec d_unem, robust
+
+*using standard errors clustered at the state level instead of heteroskedasticity-robust standard errors
+reg d_mrdrte d_exec d_unem, cluster(id)
+
+
+* This doesnt seem very large, howver looking at the constant (average expected murder rates is also not that high)
+
+
+*iv)
+// Load the dataset again
+use "MURDER.dta", clear
+
+xtset id year
+*Sort data by state and year to ensure proper differencing
+sort state year
+
+* Generate first differences
+by state (year): gen d_mrdrte = mrdrte - mrdrte[_n-1]
+by state (year): gen d_exec = exec - exec[_n-1]
+by state (year): gen d_unem = unem - unem[_n-1]
+
+*Keep only the observations for 1993 since differencing eliminates 1990
+keep if year == 93
+
+*Run the regression with robust standard errors
+reg d_mrdrte d_exec d_unem, robust
+
+*using standard errors clustered at the state level instead of heteroskedasticity-robust standard errors
+reg d_mrdrte d_exec d_unem, cluster(id)
+
+*v)
+
+*Sort data by exec in descending order
+gsort -exec
+
+*List the state and exec values for the top two states
+list state exec in 1/2
+
+/*    +--------------+
+     | state   exec |
+     |--------------|
+  1. |    TX     34 |
+  2. |    VA     11 |
+     +--------------+*/
+
+
+*Texas has the largest value of exec (34), more that three times the next one, which is Virginia (11). Importantly, these are the topotals of three-yeas: 1990, 91, and 93.
+
+*vi)
+
+* Exclude Texas from the analysis
+drop if state == "TX"
+
+* Keep only the observations for 1993 since differencing eliminates 1990
+keep if year == 93
+
+* Run the regression with robust standard errors
+reg d_mrdrte d_exec d_unem, robust
+
+* Heteroskedasticity-robust standard errors
+reg d_mrdrte d_exec d_unem, cluster(id)
+
+*The coefficient on exec is negative, but small. It is, however, statistically significant. Dropping Texas, the outlier state in terms of exec, seems to decrease the economic significance of the deterrence effect of the exec variable, which makes sense since this way we are loosing variation in the explanatory variable.     
+
+*vii)
+
+// Load the dataset again
+use "MURDER.dta", clear
+
+* Set the panel data structure
+xtset id year
+
+* Fixed effects regression including year dummies
+xtreg mrdrte exec unem i.year, fe robust
+
+* Run the fixed effects regression with robust standard errors
+xtreg mrdrte exec unem, fe vce(robust)
+
+xtreg mrdrte exec unem i.year, fe cluster(id)
+
+*The deterrence effect seems to be similar to that of the previous specification.
+
+
